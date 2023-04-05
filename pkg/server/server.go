@@ -5,18 +5,18 @@ import (
 	"golang.org/x/net/websocket"
 	"io"
 	"sync"
-	"ws/pkg/log"
+	"ws/pkg/logger"
 )
 
 const BUF_SIZE = 1024
 
 type Server struct {
-	logger *log.Logger
+	logger *logger.Logger
 	conns  map[*websocket.Conn]bool
 	mu     sync.Mutex
 }
 
-func New(logger *log.Logger) *Server {
+func New(logger *logger.Logger) *Server {
 	return &Server{
 		logger: logger,
 		conns:  make(map[*websocket.Conn]bool),
@@ -24,7 +24,7 @@ func New(logger *log.Logger) *Server {
 }
 
 func (s *Server) HandleWS(ws *websocket.Conn) {
-	s.logger.Log(log.INFO, fmt.Sprintf("new incoming connection: %s", ws.RemoteAddr()))
+	s.logger.Info(fmt.Sprintf("new incoming connection: %s", ws.RemoteAddr()))
 
 	/** mutex is used to prevent race conditions */
 	s.mu.Lock()
@@ -42,13 +42,13 @@ func (s *Server) readLoop(ws *websocket.Conn) {
 
 			/** handle situation where the client closes the connection */
 			if err == io.EOF {
-				s.logger.Log(log.INFO, "client disconnected socket")
+				s.logger.Info("client disconnected socket")
 				delete(s.conns, ws)
 				break
 			}
 
 			/** TODO: do proper error handling */
-			s.logger.Log(log.ERROR, fmt.Sprintf("read error: %v+", err))
+			s.logger.Error(fmt.Sprintf("read error: %v+", err))
 
 			/** breaking out of the loop will close the websocket */
 			continue
@@ -64,7 +64,7 @@ func (s *Server) Broadcast(b []byte) {
 	for ws := range s.conns {
 		go func(ws *websocket.Conn) {
 			if _, err := ws.Write(b); err != nil {
-				s.logger.Log(log.WARNING, "failed to broadcast message to websocket")
+				s.logger.Warn("failed to broadcast message to websocket")
 			}
 		}(ws)
 	}

@@ -3,7 +3,7 @@ package main
 import (
 	"golang.org/x/net/websocket"
 	"net/http"
-	"ws/pkg/log"
+	"ws/pkg/logger"
 	"ws/pkg/server"
 )
 
@@ -13,11 +13,11 @@ const (
 )
 
 func main() {
-	logger := log.New()
-	s := server.New(logger)
+	lg := logger.New()
+	s := server.New(lg)
 
 	http.Handle("/ws", websocket.Handler(s.HandleWS))
 
-	logger.Log(log.INFO, "starting websocket server on port "+PORT)
+	lg.Info("starting websocket server on port " + PORT)
 	http.ListenAndServe(HOST+PORT, nil)
 }
