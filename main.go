@@ -13,11 +13,11 @@ const (
 )
 
 func main() {
-	lg := logger.New()
-	s := server.New(lg)
+	log := logger.New()
+	s := server.New(log)
 
 	http.Handle("/ws", websocket.Handler(s.HandleWS))
 
-	lg.Info("starting websocket server on port " + PORT)
+	log.Info("starting websocket server on port " + PORT)
 	http.ListenAndServe(HOST+PORT, nil)
 }
